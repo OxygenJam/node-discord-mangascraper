@@ -9,6 +9,9 @@ const bot = new Discord.Client();
 
 const token = process.env.token;
 
+const err = chalk.red('ERROR: ');
+const arw = chalk.green('>> ');
+
 //Init upon bot loading
 bot.on('ready',()=>{
     console.log('Logged in! マドカ先輩 is up and running');
@@ -30,21 +33,42 @@ bot.on('message', (message)=>{
 
             mangaQuerySearch(usersmessage, 3).then((url)=>{
 
-                console.log(chalk.blue(url));
+                console.log(arw, chalk.blue(url), ' was retrieved.');
 
                 getMangaPage(url, 3).then((metadata)=>{
 
-                    message.channel.send(metadata.title);
-                    message.channel.send(metadata.synopsis, { files: [metadata.image] });
+                    console.log(arw, 'Preparing to send...');
+
+                    var result = {
+                        "embed": {
+                            "description": metadata.synopsis,
+                            "color": 11962048,
+                            "timestamp": new Date(),
+                            "footer": {
+                              "icon_url": "https://cdn.discordapp.com/avatars/282550597377589248/f9815db330179f1c7eceab9ff84079e1.png",
+                              "text": "Bot by: OxygenJam"
+                            },
+                            "author": {
+                                "author":metadata.title
+                            }
+                        }
+                    };
+
+                    if(metadata.image){
+                        result["image"] = { "url": metadata.image};
+                    }
+
+                    message.channel.send(result);
+                    console.log(arw, 'Sent!');
 
                 }).catch((error)=>{
-                    console.log('ERROR:', error);
+                    console.log(err, error);
 
                     message.reply('すみません！ An error occured while retrieving the manga metadata please try again...');
                 });
 
             }).catch((error)=>{
-                console.log('ERROR:', error);
+                console.log(err, error);
 
                 message.reply('すみません！ An error occured while retrieving the manga from the searchengine please try again...');
             })
@@ -67,12 +91,14 @@ bot.login(token);
  */
 function mangaQuerySearch(manga, retries){
 
+    console.log(arw, 'Retrieving manga result HTML body...');
     //Creates the url to be requested
     var url = process.env.searchengine + manga;
 
     return request(url)
         .then((body)=>{
-            console.log(chalk.green(body));
+
+            console.log(arw, 'Manga result HTML body loaded.');
             return getMangaPageURL(body);
         })
         .catch((error)=>{
@@ -82,7 +108,7 @@ function mangaQuerySearch(manga, retries){
                 return mangaQuerySearch(manga, retries-1);
             }
             else{
-                console.log('ERROR:','Unable to retrieved after multiple retries');
+                throw 'Unable to retrieved after multiple retries'
             }
     
         })
@@ -98,6 +124,8 @@ function mangaQuerySearch(manga, retries){
  */
 function getMangaPageURL(body){
     
+    console.log(arw, 'Retrieving manga url...');
+
     var $ = cheerio.load(body);
     var result = process.env.result;
 
@@ -114,9 +142,13 @@ function getMangaPageURL(body){
  * @returns {Promise} This returns a promise of the object metadata of the manga page
  */
 function getMangaPage(url, retries){
+
+    console.log(arw, 'Retrieving manga page HTML body...');
     
     return request(url)
         .then((body)=>{
+
+            console.log(arw, 'Manga page HTML body loaded.');
             return getMangaPageData(body);
         })
         .catch((error)=>{
@@ -126,7 +158,7 @@ function getMangaPage(url, retries){
                 return getMangaPage(manga, retries-1);
             }
             else{
-                console.log('ERROR:','Unable to retrieved after multiple retries');
+                throw 'Unable to retrieved after multiple retries';
             }
         })
 }
@@ -139,6 +171,8 @@ function getMangaPage(url, retries){
  * @returns {object} This returns the metadata object of the page
  */
 function getMangaPageData(body){
+
+    console.log(arw, 'Retrieving manga metadata...');
     
     var $ = cheerio.load(body);
     var title = process.env.title;
@@ -152,5 +186,6 @@ function getMangaPageData(body){
         metadata.image = $(imageurl).attr('src');
     }
 
+    console.log(arw, metadata, ' was retrieved');
     return metadata; 
 }
