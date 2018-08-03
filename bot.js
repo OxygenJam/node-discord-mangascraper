@@ -3,6 +3,7 @@ require('dotenv').config();
 const cheerio = require('cheerio');
 const request = require('request-promise');
 
+const chalk = require('chalk');
 const Discord = require('discord.js');
 const bot = new Discord.Client();
 
@@ -19,13 +20,17 @@ bot.on('message', (message)=>{
     if(message.author.bot) return;
 
     let usersmessage = message.content;
-    if(usersmessage.indexOf('?')){
+    if(usersmessage.indexOf('?')!=-1){
+
+        usersmessage = usersmessage.substr(1, usersmessage.length-1);
 
         if(usersmessage.indexOf('<')===0 && usersmessage.indexOf('>')===usersmessage.length-1){
-
+            
             usersmessage = usersmessage.substr(1, usersmessage.length-2);
 
             mangaQuerySearch(usersmessage, 3).then((url)=>{
+
+                console.log(chalk.blue(url));
 
                 getMangaPage(url, 3).then((metadata)=>{
 
@@ -67,9 +72,10 @@ function mangaQuerySearch(manga, retries){
 
     return request(url)
         .then((body)=>{
-            console.log('Retrieving result url');
+            console.log(chalk.green(body));
             return getMangaPageURL(body);
-        }).catch((error)=>{
+        })
+        .catch((error)=>{
 
             if(retries>0){
                 console.log('ERROR: ',error);
@@ -94,8 +100,8 @@ function getMangaPageURL(body){
     
     var $ = cheerio.load(body);
     var result = process.env.result;
-    
-    return $(result).first();
+
+    return $(result).first().attr('href');
     
 }
 
@@ -111,11 +117,9 @@ function getMangaPage(url, retries){
     
     return request(url)
         .then((body)=>{
-            
-            console.log("Retrieving metadata...");
             return getMangaPageData(body);
-
-        }).catch((error)=>{
+        })
+        .catch((error)=>{
 
             if(retries>0){
                 console.log('ERROR: ',error);
@@ -142,7 +146,7 @@ function getMangaPageData(body){
     var synopsis = process.env.synopsis;
 
     var metadata ={};
-    metadata.title = $(title).text();
+    metadata.title = $(title).get(0).text();
     metadata.synopsis = $(synopsis).text();
     if(imageurl){
         metadata.image = $(imageurl).attr('src');
