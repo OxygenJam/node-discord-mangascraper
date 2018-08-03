@@ -30,6 +30,9 @@ bot.on('message', (message)=>{
 
         if(usersmessage.indexOf('<')===0 && usersmessage.indexOf('>')===usersmessage.length-1){
             
+            var replyto = message.author.username;
+            var avatar = message.author.id + '/' +  message.author.avatar ;
+            
             usersmessage = usersmessage.substr(1, usersmessage.length-2);
 
             mangaQuerySearch(usersmessage, 3).then((url)=>{
@@ -46,8 +49,8 @@ bot.on('message', (message)=>{
                             "color": 11962048,
                             "timestamp": new Date(),
                             "footer": {
-                              "icon_url": "https://cdn.discordapp.com/avatars/282550597377589248/f9815db330179f1c7eceab9ff84079e1.png",
-                              "text": "Bot by: OxygenJam"
+                              "icon_url": "https://cdn.discordapp.com/avatars/" + avatar + ".png",
+                              "text": "Requested by: " + replyto
                             },
                             "author": {
                                 "name":metadata.title
@@ -62,7 +65,7 @@ bot.on('message', (message)=>{
                         console.log(err, "Image failed to load or unavailable");
                     }
 
-                    console.log(arw, "Sending: \n", chalk.bgGreen(result));
+                    //console.log(arw, "Sending: \n", chalk.green(JSON.stringify(result)));
                     message.channel.send(result);
                     console.log(arw, 'Sent!');
 
