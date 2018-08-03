@@ -1,7 +1,7 @@
 {
     "name": "node-discord-mangascraper",
     "author": "Zird Triztan E. Driz",
-    "version": "0.0.1",
+    "version": "0.5.0",
     "dependencies": {
         "chalk": "^2.4.1",
         "cheerio": "^1.0.0-rc.2",

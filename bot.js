@@ -15,6 +15,7 @@ const arw = chalk.green('>> ');
 //Init upon bot loading
 bot.on('ready',()=>{
     console.log('Logged in! マドカ先輩 is up and running');
+
 });
 
 
@@ -49,15 +50,19 @@ bot.on('message', (message)=>{
                               "text": "Bot by: OxygenJam"
                             },
                             "author": {
-                                "author":metadata.title
+                                "name":metadata.title
                             }
                         }
                     };
 
                     if(metadata.image){
-                        result["image"] = { "url": metadata.image};
+                        result.embed["image"] = { "url": metadata.image};
+                        console.log(arw, "Image properly loaded");
+                    }else{
+                        console.log(err, "Image failed to load or unavailable");
                     }
 
+                    console.log(arw, "Sending: \n", chalk.bgGreen(result));
                     message.channel.send(result);
                     console.log(arw, 'Sent!');
 
@@ -180,12 +185,12 @@ function getMangaPageData(body){
     var synopsis = process.env.synopsis;
 
     var metadata ={};
-    metadata.title = $(title).get(0).text();
+    metadata.title = $(title).first().text();
     metadata.synopsis = $(synopsis).text();
     if(imageurl){
         metadata.image = $(imageurl).attr('src');
     }
 
-    console.log(arw, metadata, ' was retrieved');
+    console.log(arw, 'metadata has been retrieved');
     return metadata; 
 }
