@@ -78,7 +78,7 @@ bot.on('message', (message)=>{
             }).catch((error)=>{
                 console.log(err, error);
 
-                message.reply('すみません！ An error occured while retrieving the manga from the searchengine please try again...');
+                message.reply('すみません！ An error occured while retrieving the manga from the searchengine please try again later...');
             })
 
 
@@ -116,7 +116,7 @@ function mangaQuerySearch(manga, retries){
                 return mangaQuerySearch(manga, retries-1);
             }
             else{
-                throw 'Unable to retrieved after multiple retries'
+                throw 'Unable to retrieve after multiple retries'
             }
     
         })
@@ -166,7 +166,7 @@ function getMangaPage(url, retries){
                 return getMangaPage(manga, retries-1);
             }
             else{
-                throw 'Unable to retrieved after multiple retries';
+                throw 'Unable to retrieve after multiple retries';
             }
         })
 }
@@ -191,7 +191,7 @@ function getMangaPageData(body){
     metadata.title = $(title).first().text();
     metadata.synopsis = $(synopsis).text();
     if(imageurl){
-        metadata.image = $(imageurl).attr('src');
+        metadata.image = $(imageurl).attr('data-src');
     }
 
     console.log(arw, 'metadata has been retrieved');
