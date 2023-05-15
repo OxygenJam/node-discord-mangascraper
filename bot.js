@@ -1,12 +1,18 @@
-require('dotenv').config();
+import * as dotenv from 'dotenv';
 
-const cheerio = require('cheerio');
-const request = require('request-promise');
+import * as cheerio from 'cheerio';
+import * as request from 'request-promise';
 
-const chalk = require('chalk');
-const Discord = require('discord.js');
-const bot = new Discord.Client();
+import * as chalk from 'chalk';
+import { Client, GatewayIntentBits } from 'discord.js';
+const bot = new Client({ intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+] });
 
+dotenv.config();
 const token = process.env.token;
 
 const err = chalk.red('ERROR: ');
