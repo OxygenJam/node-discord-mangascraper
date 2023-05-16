@@ -17,23 +17,25 @@ query ($search: String) {
     }
     description
     status
+    siteUrl
   }
 }
 `;
 
 export type MangaResult = {
-    id: number,
+    id: number;
     title: {
         romaji: string,
         english: string,
         native: string
-    },
+    };
     coverImage: {
         extraLarge: string,
         large: string,
         medium: string,
         color: string
-    },
-    description: string,
-    status: string
+    };
+    description: string;
+    status: string;
+    siteUrl: string;
 };

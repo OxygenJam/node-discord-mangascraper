@@ -54,12 +54,13 @@ bot.on(Events.MessageCreate, (message)=>{
                 author:{
                     name: metadata.title.romaji
                 },
-                description: metadata.description,
+                url: metadata.siteUrl,
+                description: sanitizeStringFromHTML(metadata.description),
                 fields:[
-                    { name: "Romaji", value: metadata.title.romaji },
-                    { name: "English", value: metadata.title.english },
-                    { name: "Native", value: metadata.title.native },
-                    { name: "Status", value: metadata.status },
+                    { name: "Romaji", value: metadata.title.romaji, inline: true },
+                    { name: "English", value: metadata.title.english, inline: true },
+                    { name: "Native", value: metadata.title.native, inline: true  },
+                    { name: "Status", value: metadata.status }
                 ],
                 color: 11962048,
                 timestamp: new Date(),
@@ -70,7 +71,8 @@ bot.on(Events.MessageCreate, (message)=>{
             })
 
             if(metadata.coverImage){
-                mangaResult.setImage(metadata.coverImage.medium);
+                mangaResult.setImage(metadata.coverImage.large);
+                mangaResult.setThumbnail(metadata.coverImage.medium);
                 console.log(arw, "Image properly loaded");
             }else{
                 console.log(err, "Image failed to load or unavailable");
@@ -91,12 +93,22 @@ bot.on(Events.MessageCreate, (message)=>{
 bot.login(token);
 
 /**
+ * Sanitizes the string from HTML tags
+ * 
+ * @param {string} str The string to sanitize
+ * @returns {string} A clean string without any HTML tags
+ */
+function sanitizeStringFromHTML(str: string){
+    return str.replace(/<\/?[^>]+(>|$)/g, "");
+}
+
+/**
  * Retrieves the manga from a search engine
  * 
- * @param {String} manga The manga to be searched in the search engine
- * @param {Number} retries The number of retries till the bot gives up
+ * @param {string} manga The manga to be searched in the search engine
+ * @param {number} retries The number of retries till the bot gives up
  * 
- * @returns {Promise} This returns a promise of the URL of the first result of the search engine
+ * @returns {Promise<MangaResult>} This returns a promise of the URL of the first result of the search engine
  */
 function mangaQuerySearch(manga:string, retries:number): Promise<MangaResult>{
     console.log(arw, `Attempting to retrieve manga ${manga}`);

@@ -1,11 +1,10 @@
 {
     "name": "node-discord-mangascraper",
     "author": "Zird Triztan E. Driz",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "dependencies": {
         "axios": "^1.4.0",
         "chalk": "^4.1.2",
-        "cheerio": "latest",
         "discord.js": "^14.11.0",
         "dotenv": "^16.0.3"
     },
@@ -15,7 +14,7 @@
         "typescript": "^5.0.4"
     },
     "scripts": {
-        "tsc":"tsc",
+        "tsc": "tsc",
         "start": "ts-node ./app/bot.ts"
     },
     "repository": {
