@@ -9,7 +9,12 @@ query ($search: String) {
       english
       native
     }
-    coverImage
+    coverImage {
+        extraLarge
+        large
+        medium
+        color
+    }
     description
     status
   }

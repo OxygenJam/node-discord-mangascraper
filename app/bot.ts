@@ -29,7 +29,7 @@ bot.once(Events.ClientReady,()=>{
 });
 
 
-bot.once(Events.MessageCreate, (message)=>{
+bot.on(Events.MessageCreate, (message)=>{
 
     if(message.author.bot) return;
 
@@ -45,7 +45,7 @@ bot.once(Events.MessageCreate, (message)=>{
             replyto = message.author.username,
             avatar = message.author.id + '/' +  message.author.avatar;
         
-        mangaQuerySearch(usersmessage, 3)
+        mangaQuerySearch(query, 3)
         .then((metadata)=>{
 
             console.log(arw, 'Preparing to send...');
@@ -54,6 +54,7 @@ bot.once(Events.MessageCreate, (message)=>{
                 author:{
                     name: metadata.title.romaji
                 },
+                description: metadata.description,
                 fields:[
                     { name: "Romaji", value: metadata.title.romaji },
                     { name: "English", value: metadata.title.english },
@@ -112,7 +113,7 @@ function mangaQuerySearch(manga:string, retries:number): Promise<MangaResult>{
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         },
-        body: {
+        data: {
             query: AniListQuery,
             variables: aniListArgs
         }
@@ -120,20 +121,24 @@ function mangaQuerySearch(manga:string, retries:number): Promise<MangaResult>{
 
     return axios(query)
     .then((res) => {
-        const result: MangaResult = res.data.json();
+        const 
+            { data } = res.data,
+            { Media } = data,
+            result: MangaResult = Media;
         
         return result;
     })
     .catch((error) => {
-        if(error.response.status === 400){
+        if(error.response.status === 404){
             throw new Error('No results found');
         }
         else{
             if(retries>0){
-                console.error(err, error);
+                console.error(err, error.response.data || error.message);
                 return mangaQuerySearch(manga, retries-1);
             }
             else{
+                console.error(err, error.response.data || error.message)
                 throw new Error('Something went wrong while retrieving the manga');
             }
         }
