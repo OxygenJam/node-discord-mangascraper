@@ -42,55 +42,49 @@ bot.once(Events.MessageCreate, (message)=>{
 
         if(usersmessage.indexOf('<')===0 && usersmessage.indexOf('>')===usersmessage.length-1){
             
-            var replyto = message.author.username;
-            var avatar = message.author.id + '/' +  message.author.avatar ;
+            const 
+                replyto = message.author.username,
+                avatar = message.author.id + '/' +  message.author.avatar;
             
             usersmessage = usersmessage.substr(1, usersmessage.length-2);
 
             mangaQuerySearch(usersmessage, 3).then((url)=>{
 
                 console.log(arw, chalk.blue(url), ' was retrieved.');
+                return getMangaPage(url, 3);
+            })
+            .then((metadata)=>{
 
-                getMangaPage(url, 3).then((metadata)=>{
+                console.log(arw, 'Preparing to send...');
 
-                    console.log(arw, 'Preparing to send...');
-
-                    const mangaResult = new EmbedBuilder({
-                        author:{
-                            name: metadata.title
-                        },
-                        color: 11962048,
-                        timestamp: new Date(),
-                        footer:{
-                            icon_url: `https://cdn.discordapp.com/avatars/${avatar}.png`,
-                            text: `Requested by: ${replyto}`
-                        }
-                    })
-
-                    if(metadata.image){
-                        mangaResult.setImage(metadata.image);
-                        console.log(arw, "Image properly loaded");
-                    }else{
-                        console.log(err, "Image failed to load or unavailable");
+                const mangaResult = new EmbedBuilder({
+                    author:{
+                        name: metadata.title
+                    },
+                    color: 11962048,
+                    timestamp: new Date(),
+                    footer:{
+                        icon_url: `https://cdn.discordapp.com/avatars/${avatar}.png`,
+                        text: `Requested by: ${replyto}`
                     }
+                })
 
-                    //console.log(arw, "Sending: \n", chalk.green(JSON.stringify(result)));
-                    message.channel.send({embeds: [mangaResult]});
-                    console.log(arw, 'Sent!');
+                if(metadata.image){
+                    mangaResult.setImage(metadata.image);
+                    console.log(arw, "Image properly loaded");
+                }else{
+                    console.log(err, "Image failed to load or unavailable");
+                }
 
-                }).catch((error)=>{
-                    console.log(err, error);
-
-                    message.reply('すみません！ An error occured while retrieving the manga metadata please try again...');
-                });
+                //console.log(arw, "Sending: \n", chalk.green(JSON.stringify(result)));
+                message.channel.send({embeds: [mangaResult]});
+                console.log(arw, 'Sent!');
 
             }).catch((error)=>{
                 console.log(err, error);
 
                 message.reply('すみません！ An error occured while retrieving the manga from the searchengine please try again later...');
             })
-
-
         }
     }
 });
