@@ -1,10 +1,9 @@
 import * as dotenv from 'dotenv';
-import * as cheerio from 'cheerio';
 
 import axios from 'axios';
 import chalk from 'chalk';
 
-import { MangaMetadata } from './metadata-types';
+import { AniListQuery, MangaResult } from './anilist-query';
 import {
     Client,
     Events,
@@ -14,7 +13,6 @@ import {
 
 const bot = new Client({ intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent
 ] });
@@ -48,19 +46,21 @@ bot.once(Events.MessageCreate, (message)=>{
             
             usersmessage = usersmessage.substr(1, usersmessage.length-2);
 
-            mangaQuerySearch(usersmessage, 3).then((url)=>{
-
-                console.log(arw, chalk.blue(url), ' was retrieved.');
-                return getMangaPage(url, 3);
-            })
+            mangaQuerySearch(usersmessage, 3)
             .then((metadata)=>{
 
                 console.log(arw, 'Preparing to send...');
 
                 const mangaResult = new EmbedBuilder({
                     author:{
-                        name: metadata.title
+                        name: metadata.title.romaji
                     },
+                    fields:[
+                        { name: "Romaji", value: metadata.title.romaji },
+                        { name: "English", value: metadata.title.english },
+                        { name: "Native", value: metadata.title.native },
+                        { name: "Status", value: metadata.status },
+                    ],
                     color: 11962048,
                     timestamp: new Date(),
                     footer:{
@@ -69,8 +69,8 @@ bot.once(Events.MessageCreate, (message)=>{
                     }
                 })
 
-                if(metadata.image){
-                    mangaResult.setImage(metadata.image);
+                if(metadata.coverImage){
+                    mangaResult.setImage(metadata.coverImage.medium);
                     console.log(arw, "Image properly loaded");
                 }else{
                     console.log(err, "Image failed to load or unavailable");
@@ -83,14 +83,13 @@ bot.once(Events.MessageCreate, (message)=>{
             }).catch((error)=>{
                 console.log(err, error);
 
-                message.reply('すみません！ An error occured while retrieving the manga from the searchengine please try again later...');
+                message.reply(`すみません！ ${error.message}`);
             })
         }
     }
 });
 
 bot.login(token);
-
 
 /**
  * Retrieves the manga from a search engine
@@ -100,105 +99,45 @@ bot.login(token);
  * 
  * @returns {Promise} This returns a promise of the URL of the first result of the search engine
  */
-function mangaQuerySearch(manga: string, retries: number){
+function mangaQuerySearch(manga:string, retries:number): Promise<MangaResult>{
+    console.log(arw, `Attempting to retrieve manga ${manga}`);
+    const 
+        searchEngine = 'https://graphql.anilist.co',
+        aniListArgs = {
+            search: manga
+        };
 
-    console.log(arw, 'Retrieving manga result HTML body...');
-    //Creates the url to be requested
-    var url = process.env.searchengine + manga;
-
-    return axios.get(url)
-        .then((body)=>{
-
-            console.log(arw, 'Manga result HTML body loaded.');
-            return getMangaPageURL(body);
+    const query = {
+        method: 'POST',
+        url: searchEngine,
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            query: AniListQuery,
+            variables: aniListArgs
         })
-        .catch((error)=>{
+    };
 
+    return axios(query)
+    .then((res) => {
+        const result: MangaResult = res.data.json();
+        
+        return result;
+    })
+    .catch((error) => {
+        if(error.response.status === 404){
+            throw 'No results found';
+        }
+        else{
             if(retries>0){
-                console.log('ERROR: ',error);
+                console.log('ERROR: ', err);
                 return mangaQuerySearch(manga, retries-1);
             }
             else{
-                throw 'Unable to retrieve after multiple retries'
+                throw 'Something went wrong while retrieving the manga';
             }
-    
-        })
-}
-
-/**
- * This retrieves the manga URL from the given selector argument in the env file
- * 
- * @param {String} body This refers to the body of the html document where the search engine result is
- * 
- * @returns {String} This returns the url of the first result of the search engine
- */
-function getMangaPageURL(body){
-    
-    console.log(arw, 'Retrieving manga url...');
-
-    var $ = cheerio.load(body);
-    var result = process.env.result;
-
-    return $(result).first().attr('href');
-    
-}
-
-/**
- * This retrieves the metadata from the page
- * 
- * @param {String} url This refers to the page of the result manga itself
- * @param {Number} retries The number of retries till the bot gives up
- * 
- * @returns {Promise} This returns a promise of the object metadata of the manga page
- */
-function getMangaPage(url: string, retries: number){
-
-    console.log(arw, 'Retrieving manga page HTML body...');
-    
-    return axios.get(url)
-        .then((body)=>{
-
-            console.log(arw, 'Manga page HTML body loaded.');
-            return getMangaPageData(body);
-        })
-        .catch((error)=>{
-
-            if(retries>0){
-                console.log('ERROR: ',error);
-                return getMangaPage(url, retries-1);
-            }
-            else{
-                throw 'Unable to retrieve after multiple retries';
-            }
-        })
-}
-
-/**
- * Retrieves the metadata from the manga page
- * 
- * @param {String} body This refers to the HTML document of the manga page 
- * 
- * @returns {object} This returns the metadata object of the page
- */
-function getMangaPageData(body){
-
-    console.log(arw, 'Retrieving manga metadata...');
-    
-    const 
-        $ = cheerio.load(body),
-        title = process.env.title,
-        imageurl = process.env.imageurl,
-        synopsis = process.env.synopsis;
-
-    const metadata: MangaMetadata = {
-        title: $(title).first().text(),
-        synopsis: $(synopsis).text(),       
-    };
-
-    if(imageurl){
-        metadata.image = $(imageurl).attr('data-src');
-    }
-
-    console.log(arw, 'metadata has been retrieved');
-    return metadata; 
+        }
+    })
 }
