@@ -1,10 +1,12 @@
 import * as dotenv from 'dotenv';
-
 import * as cheerio from 'cheerio';
-import * as request from 'request-promise';
 
-import * as chalk from 'chalk';
+import axios from 'axios';
+import chalk from 'chalk';
+
+import { MangaMetadata } from './metadata-types';
 import { Client, GatewayIntentBits } from 'discord.js';
+
 const bot = new Client({ intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
@@ -103,13 +105,13 @@ bot.login(token);
  * 
  * @returns {Promise} This returns a promise of the URL of the first result of the search engine
  */
-function mangaQuerySearch(manga, retries){
+function mangaQuerySearch(manga: string, retries: number){
 
     console.log(arw, 'Retrieving manga result HTML body...');
     //Creates the url to be requested
     var url = process.env.searchengine + manga;
 
-    return request(url)
+    return axios.get(url)
         .then((body)=>{
 
             console.log(arw, 'Manga result HTML body loaded.');
@@ -155,11 +157,11 @@ function getMangaPageURL(body){
  * 
  * @returns {Promise} This returns a promise of the object metadata of the manga page
  */
-function getMangaPage(url, retries){
+function getMangaPage(url: string, retries: number){
 
     console.log(arw, 'Retrieving manga page HTML body...');
     
-    return request(url)
+    return axios.get(url)
         .then((body)=>{
 
             console.log(arw, 'Manga page HTML body loaded.');
@@ -169,7 +171,7 @@ function getMangaPage(url, retries){
 
             if(retries>0){
                 console.log('ERROR: ',error);
-                return getMangaPage(manga, retries-1);
+                return getMangaPage(url, retries-1);
             }
             else{
                 throw 'Unable to retrieve after multiple retries';
@@ -188,14 +190,17 @@ function getMangaPageData(body){
 
     console.log(arw, 'Retrieving manga metadata...');
     
-    var $ = cheerio.load(body);
-    var title = process.env.title;
-    var imageurl = process.env.imageurl;
-    var synopsis = process.env.synopsis;
+    const 
+        $ = cheerio.load(body),
+        title = process.env.title,
+        imageurl = process.env.imageurl,
+        synopsis = process.env.synopsis;
 
-    var metadata ={};
-    metadata.title = $(title).first().text();
-    metadata.synopsis = $(synopsis).text();
+    const metadata: MangaMetadata = {
+        title: $(title).first().text(),
+        synopsis: $(synopsis).text(),       
+    };
+
     if(imageurl){
         metadata.image = $(imageurl).attr('data-src');
     }

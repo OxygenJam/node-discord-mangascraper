@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "moduleResolution": "node",
+        "allowJs": true,
+        "module": "es6",
+        "target": "es6"
+    },
+    "include": ["./app/**/*"]
+}
