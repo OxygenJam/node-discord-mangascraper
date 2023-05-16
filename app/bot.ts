@@ -5,7 +5,12 @@ import axios from 'axios';
 import chalk from 'chalk';
 
 import { MangaMetadata } from './metadata-types';
-import { Client, GatewayIntentBits } from 'discord.js';
+import {
+    Client,
+    Events,
+    GatewayIntentBits ,
+    EmbedBuilder
+} from 'discord.js';
 
 const bot = new Client({ intents: [
     GatewayIntentBits.Guilds,
@@ -21,12 +26,12 @@ const err = chalk.red('ERROR: ');
 const arw = chalk.green('>> ');
 
 //Init upon bot loading
-bot.on('ready',()=>{
+bot.once(Events.ClientReady,()=>{
     console.log('Logged in! マドカ先輩 is up and running');
 });
 
 
-bot.on('message', (message)=>{
+bot.once(Events.MessageCreate, (message)=>{
 
     if(message.author.bot) return;
 
@@ -50,30 +55,27 @@ bot.on('message', (message)=>{
 
                     console.log(arw, 'Preparing to send...');
 
-                    var result = {
-                        "embed": {
-                            "description": metadata.synopsis,
-                            "color": 11962048,
-                            "timestamp": new Date(),
-                            "footer": {
-                              "icon_url": "https://cdn.discordapp.com/avatars/" + avatar + ".png",
-                              "text": "Requested by: " + replyto
-                            },
-                            "author": {
-                                "name":metadata.title
-                            }
+                    const mangaResult = new EmbedBuilder({
+                        author:{
+                            name: metadata.title
+                        },
+                        color: 11962048,
+                        timestamp: new Date(),
+                        footer:{
+                            icon_url: `https://cdn.discordapp.com/avatars/${avatar}.png`,
+                            text: `Requested by: ${replyto}`
                         }
-                    };
+                    })
 
                     if(metadata.image){
-                        result.embed["image"] = { "url": metadata.image};
+                        mangaResult.setImage(metadata.image);
                         console.log(arw, "Image properly loaded");
                     }else{
                         console.log(err, "Image failed to load or unavailable");
                     }
 
                     //console.log(arw, "Sending: \n", chalk.green(JSON.stringify(result)));
-                    message.channel.send(result);
+                    message.channel.send({embeds: [mangaResult]});
                     console.log(arw, 'Sent!');
 
                 }).catch((error)=>{
