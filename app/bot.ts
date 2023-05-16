@@ -23,7 +23,6 @@ const arw = chalk.green('>> ');
 //Init upon bot loading
 bot.on('ready',()=>{
     console.log('Logged in! マドカ先輩 is up and running');
-
 });
 
 
@@ -128,7 +127,6 @@ function mangaQuerySearch(manga: string, retries: number){
             }
     
         })
-
 }
 
 /**

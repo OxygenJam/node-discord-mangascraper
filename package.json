@@ -4,18 +4,19 @@
     "version": "0.5.0",
     "dependencies": {
         "axios": "^1.4.0",
-        "chalk": "^5.2.0",
+        "chalk": "^4.1.2",
         "cheerio": "latest",
         "discord.js": "^14.11.0",
         "dotenv": "^16.0.3"
     },
     "devDependencies": {
         "ts-loader": "^9.4.2",
+        "ts-node": "^10.9.1",
         "typescript": "^5.0.4"
     },
-    "type": "module",
     "scripts": {
-        "start": "node ./dist/index.js"
+        "tsc":"tsc",
+        "start": "ts-node ./app/bot.ts"
     },
     "repository": {
         "type": "git",
