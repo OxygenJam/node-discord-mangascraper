@@ -1,9 +1,11 @@
 import * as dotenv from 'dotenv';
 
-import axios from 'axios';
 import chalk from 'chalk';
 
-import { AniListQuery, MangaResult } from './anilist-query';
+import { mangaQuerySearch, arw, sanitizeStringFromHTML, populateEmbedFields, err } from './utils/helper';
+import { BaseInteraction, CommandInteraction, Interaction } from 'discord.js';
+import { commands } from './commands/commands';
+
 import {
     Client,
     Events,
@@ -20,11 +22,9 @@ const bot = new Client({ intents: [
 dotenv.config();
 const token = process.env.token;
 
-const err = chalk.red('ERROR: ');
-const arw = chalk.green('>> ');
-
 //Init upon bot loading
 bot.once(Events.ClientReady,()=>{
+    bot.application.commands.set(commands);
     console.log(chalk.green('Logged in! '), 'マドカ先輩 is up and running');
 });
 
@@ -56,12 +56,7 @@ bot.on(Events.MessageCreate, (message)=>{
                 },
                 url: metadata.siteUrl,
                 description: sanitizeStringFromHTML(metadata.description),
-                fields:[
-                    { name: "Romaji", value: metadata.title.romaji, inline: true },
-                    { name: "English", value: metadata.title.english, inline: true },
-                    { name: "Native", value: metadata.title.native, inline: true  },
-                    { name: "Status", value: metadata.status }
-                ],
+                fields: populateEmbedFields(metadata),
                 color: 11962048,
                 timestamp: new Date(),
                 footer:{
@@ -78,7 +73,6 @@ bot.on(Events.MessageCreate, (message)=>{
                 console.log(err, "Image failed to load or unavailable");
             }
 
-            //console.log(arw, "Sending: \n", chalk.green(JSON.stringify(result)));
             message.reply({embeds: [mangaResult]});
             console.log(arw, 'Sent!');
 
@@ -90,69 +84,25 @@ bot.on(Events.MessageCreate, (message)=>{
     }
 });
 
+
+bot.on(Events.InteractionCreate, async (interaction: Interaction) => {
+    if(!interaction.isCommand()) return;
+
+    // Get the command snowflake via command name
+    await handleCommand(bot, interaction);
+});
+
+async function handleCommand(client: Client, interaction: CommandInteraction): Promise<void> {
+    const slashCommands = commands.find(c => c.name === interaction.commandName);
+
+    if(!slashCommands){
+        interaction.reply("すまー、わかりません! I don't understand the command");
+        return;
+    }
+
+    await interaction.deferReply();
+
+    slashCommands.run(client, interaction);
+}
+
 bot.login(token);
-
-/**
- * Sanitizes the string from HTML tags
- * 
- * @param {string} str The string to sanitize
- * @returns {string} A clean string without any HTML tags
- */
-function sanitizeStringFromHTML(str: string){
-    return str.replace(/<\/?[^>]+(>|$)/g, "");
-}
-
-/**
- * Retrieves the manga from a search engine
- * 
- * @param {string} manga The manga to be searched in the search engine
- * @param {number} retries The number of retries till the bot gives up
- * 
- * @returns {Promise<MangaResult>} This returns a promise of the URL of the first result of the search engine
- */
-function mangaQuerySearch(manga:string, retries:number): Promise<MangaResult>{
-    console.log(arw, `Attempting to retrieve manga ${manga}`);
-    const 
-        searchEngine = 'https://graphql.anilist.co',
-        aniListArgs = {
-            search: manga
-        };
-
-    const query = {
-        method: 'POST',
-        url: searchEngine,
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        data: {
-            query: AniListQuery,
-            variables: aniListArgs
-        }
-    };
-
-    return axios(query)
-    .then((res) => {
-        const 
-            { data } = res.data,
-            { Media } = data,
-            result: MangaResult = Media;
-        
-        return result;
-    })
-    .catch((error) => {
-        if(error.response.status === 404){
-            throw new Error('No results found');
-        }
-        else{
-            if(retries>0){
-                console.error(err, error.response.data || error.message);
-                return mangaQuerySearch(manga, retries-1);
-            }
-            else{
-                console.error(err, error.response.data || error.message)
-                throw new Error('Something went wrong while retrieving the manga');
-            }
-        }
-    })
-}
