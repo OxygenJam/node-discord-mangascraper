@@ -7,5 +7,3 @@ mounts = []
 primary_region = "syd"
 processes = []
 
-[env]
- token = "NDc0ODYyNTA1MzY2MjU3NjY0.G5OxOT.7rJ_Td1ov7YoJQ2kZbfJ-pfZVopzEDTLX12zBo"
