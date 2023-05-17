@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import chalk from 'chalk';
 
 import { mangaQuerySearch, arw, sanitizeStringFromHTML, populateEmbedFields, err } from './utils/helper';
-import { BaseInteraction, CommandInteraction, Interaction } from 'discord.js';
+import { ActivityType, BaseInteraction, CommandInteraction, Interaction } from 'discord.js';
 import { commands } from './commands/commands';
 
 import {
@@ -26,6 +26,11 @@ const token = process.env.token;
 bot.once(Events.ClientReady,()=>{
     bot.application.commands.set(commands);
     console.log(chalk.green('Logged in! '), 'マドカ先輩 is up and running');
+    bot.user.setActivity({
+        name:"Tito Migs",
+        type: ActivityType.Watching,
+        url: "https://www.youtube.com/channel/UCYHM6s0dk0PgFqNmnqHfHkQ"
+    })
 });
 
 
