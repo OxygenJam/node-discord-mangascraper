@@ -8,49 +8,56 @@ export const mangaCmd: Command = {
     type: ApplicationCommandType.ChatInput,
     options: [ // Basically arguments user inputs
         {
-            name: "Manga",
+            name: "manga",
             description: "The name of the manga to search",
             type: ApplicationCommandOptionType.String
         }
     ],
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
-        const query = interaction.options.getString("Manga", true);
+        try{
+            const query = interaction.options.getString("manga", true);
 
-        mangaQuerySearch(query, 3)
-        .then((metadata)=>{
+            mangaQuerySearch(query, 3)
+            .then((metadata)=>{
 
-            console.log(arw, 'Preparing to send...');
+                console.log(arw, 'Preparing to send...');
 
-            const mangaResult = new EmbedBuilder({
-                author:{
-                    name: metadata.title.romaji
-                },
-                url: metadata.siteUrl,
-                description: sanitizeStringFromHTML(metadata.description),
-                fields: populateEmbedFields(metadata),
-                color: 11962048,
-                timestamp: new Date(),
-                footer:{
-                    icon_url: `https://cdn.discordapp.com/avatars/${interaction.user.avatar}.png`,
-                    text: `Requested by: ${interaction.user.username}`
+                const mangaResult = new EmbedBuilder({
+                    author:{
+                        name: metadata.title.romaji
+                    },
+                    url: metadata.siteUrl,
+                    description: sanitizeStringFromHTML(metadata.description),
+                    fields: populateEmbedFields(metadata),
+                    color: 11962048,
+                    timestamp: new Date(),
+                    footer:{
+                        icon_url: `https://cdn.discordapp.com/avatars/${interaction.user.avatar}.png`,
+                        text: `Requested by: ${interaction.user.username}`
+                    }
+                })
+
+                if(metadata.coverImage){
+                    mangaResult.setImage(metadata.coverImage.large);
+                    mangaResult.setThumbnail(metadata.coverImage.medium);
+                    console.log(arw, "Image properly loaded");
+                }else{
+                    console.log(err, "Image failed to load or unavailable");
                 }
+
+                interaction.followUp({embeds: [mangaResult]});
+                console.log(arw, 'Sent!');
+
+            }).catch((error)=>{
+                console.error(err, error);
+
+                interaction.followUp(`すみません！ ${error.message}`);
             })
-
-            if(metadata.coverImage){
-                mangaResult.setImage(metadata.coverImage.large);
-                mangaResult.setThumbnail(metadata.coverImage.medium);
-                console.log(arw, "Image properly loaded");
-            }else{
-                console.log(err, "Image failed to load or unavailable");
-            }
-
-            interaction.reply({embeds: [mangaResult]});
-            console.log(arw, 'Sent!');
-
-        }).catch((error)=>{
-            console.error(err, error);
-
-            interaction.reply(`すみません！ ${error.message}`);
-        })
+            return;
+        }
+        catch(e){
+            console.error(err, e.message);
+            interaction.followUp('An error occurred while processing your command');
+        }
     }
 }
