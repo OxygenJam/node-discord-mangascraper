@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import chalk from 'chalk';
 
 import { mangaQuerySearch, arw, sanitizeStringFromHTML, populateEmbedFields, err } from './utils/helper';
-import { ActivityType, BaseInteraction, CommandInteraction, Interaction } from 'discord.js';
+import { ActivityType, CommandInteraction, Interaction } from 'discord.js';
 import { commands } from './commands/commands';
 
 import {

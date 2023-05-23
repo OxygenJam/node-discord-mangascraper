@@ -4,6 +4,7 @@ import { MangaResult, AniListQuery } from "./anilist-query";
 import chalk from "chalk";
 
 export function populateEmbedFields(metadata: MangaResult): APIEmbedField[]{
+    if(Object.keys(metadata).length === 0) return [];
     const
         fields: APIEmbedField[] = [],
         { romaji, english, native } = metadata.title,
@@ -32,7 +33,8 @@ export function populateEmbedFields(metadata: MangaResult): APIEmbedField[]{
  * @param {string} str The string to sanitize
  * @returns {string} A clean string without any HTML tags
  */
-export function sanitizeStringFromHTML(str: string){
+export function sanitizeStringFromHTML(str: string = ""){
+    if(!str) return;
     return str.replace(/<\/?[^>]+(>|$)/g, "");
 }
 
@@ -41,7 +43,8 @@ export function sanitizeStringFromHTML(str: string){
  * @param {string} str The string to pascalize
  * @returns {string} A PascalizedString
  */
-export function pascalize(str: string): string{
+export function pascalize(str: string = ""): string{
+    if(!str) return;
     // group 1 and group 2
     return str.replace(/(\w)(\w*)/g, (g0,g1,g2) => {
         return g1.toUpperCase() + g2.toLowerCase();

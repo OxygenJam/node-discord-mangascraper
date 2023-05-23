@@ -21,7 +21,7 @@ export const mangaCmd: Command = {
             .then((metadata)=>{
 
                 console.log(arw, 'Preparing to send...');
-
+                const avatar = `${interaction.user.id}/${interaction.user.avatar}`;
                 const mangaResult = new EmbedBuilder({
                     author:{
                         name: metadata.title.romaji
@@ -32,7 +32,7 @@ export const mangaCmd: Command = {
                     color: 11962048,
                     timestamp: new Date(),
                     footer:{
-                        icon_url: `https://cdn.discordapp.com/avatars/${interaction.user.avatar}.png`,
+                        icon_url: `https://cdn.discordapp.com/avatars/${avatar}.png`,
                         text: `Requested by: ${interaction.user.username}`
                     }
                 })
