@@ -10,7 +10,8 @@ export const mangaCmd: Command = {
         {
             name: "manga",
             description: "The name of the manga to search",
-            type: ApplicationCommandOptionType.String
+            type: ApplicationCommandOptionType.String,
+            required: true
         }
     ],
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
