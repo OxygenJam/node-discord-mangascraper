@@ -27,7 +27,7 @@ bot.once(Events.ClientReady,()=>{
     bot.application.commands.set(commands);
     console.log(chalk.green('Logged in! '), 'マドカ先輩 is up and running');
     bot.user.setActivity({
-        name:"Tito Migs",
+        name:"anime 👀",
         type: ActivityType.Watching,
         url: "https://www.youtube.com/channel/UCYHM6s0dk0PgFqNmnqHfHkQ"
     })
