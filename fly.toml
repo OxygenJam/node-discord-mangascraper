@@ -1,9 +1,9 @@
-# fly.toml file generated for madoka-senpai on 2023-05-17T11:18:51Z
+# fly.toml app configuration file generated for madoka-senpai on 2023-06-02T18:01:45+08:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
 app = "madoka-senpai"
-kill_signal = "SIGINT"
-kill_timeout = 5
-mounts = []
 primary_region = "syd"
-processes = []
-
+kill_signal = "SIGINT"
+kill_timeout = "5s"
